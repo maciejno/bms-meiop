@@ -28,19 +28,19 @@ bat_data = bat_data.append(bat_data1, ignore_index=True)
 print(bat_data) #ipeh1+ipeh2
 
 #wykres zbiorczy napięć
-plt.scatter(bat_time, bat_data.U1, s=4, c="red", label='U1')
-plt.scatter(bat_time, bat_data.U2, s=4, c="blue", label='U2')
-plt.scatter(bat_time, bat_data.U3, s=4, c="magenta", label='U3')
-plt.scatter(bat_time, bat_data.U4, s=4, c="cyan", label='U4')
-plt.scatter(bat_time, bat_data.U5, s=4, c="gray", label='U5')
-plt.scatter(bat_time, bat_data.U6, s=4, c="black", label='U6')
+plt.scatter(bat_time, bat_data.U1, s=2, c="red", label='U1')
+plt.scatter(bat_time, bat_data.U2, s=2, c="blue", label='U2')
+plt.scatter(bat_time, bat_data.U3, s=2, c="magenta", label='U3')
+plt.scatter(bat_time, bat_data.U4, s=2, c="cyan", label='U4')
+plt.scatter(bat_time, bat_data.U5, s=2, c="gray", label='U5')
+plt.scatter(bat_time, bat_data.U6, s=2, c="black", label='U6')
 plt.xlabel("t [s]")
 plt.ylabel("U [V]")
 plt.legend(loc='best')
 plt.savefig('Lion_voltages.png', dpi=420)
 
 #krzywe ładowania
-bat_ref_1C = pd.read_csv('NMC_1C.csv', sep='; ',decimal=',') #krzywa referencyjna 1C
+bat_ref_1C = pd.read_csv('NMC_2C.csv', sep='; ',decimal=',') #krzywa referencyjna 1C
 bat_ref_1C["U"] = bat_ref_1C["U"].values[::-1]
 bat_ref_1C["Q"] = bat_ref_1C["Q"].values*0.01
 coeffs_1C = np.polynomial.polynomial.polyfit(bat_ref_1C.Q,bat_ref_1C.U,9) #dopasowanie wielomianu
@@ -55,10 +55,12 @@ bat_data_charge = bat_data[:472] #cięcie na część ładowania i rozładowania
 bat_data_discharge = bat_data[472:]
 bat_data_discharge = bat_data_discharge.reset_index(drop=True)
 
-bat_data_charge['Q'] = (bat_data_charge.index+1)*10*5000/3600/6560 #przeliczanie kolumny z ładunkiem
-bat_data_discharge['Q'] = (6560-(bat_data_discharge.index+1)*10*200/3600)/6560
+bat_data_charge['Q'] = (630+(bat_data_charge.index+1)*10*5000/3600)/8400 #przeliczanie kolumny z ładunkiem
+bat_data_discharge['Q'] = (8400-(bat_data_discharge.index+1)*10*200/3600)/8400 - 0.075
 
-bat_data_charge['StdevCh'] = bat_data_charge.Stdev/bat_diff_calc(bat_data_charge.Q,coeffs_1C) #obliczanie odchylenia ładunku
+print(bat_data_charge.Q)
+
+bat_data_charge['StdevCh'] = bat_data_charge['Stdev']/bat_diff_calc(bat_data_charge['Q'],coeffs_1C) #obliczanie odchylenia ładunku
 bat_data_discharge['StdevCh'] = bat_data_discharge.Stdev/bat_diff_calc(bat_data_discharge.Q,coeffs_02C)
 
 bat_data = bat_data_charge  #końcowe sumowanie danych
@@ -67,12 +69,12 @@ bat_mobil = 42
 
 #wykres
 fig, axs = plt.subplots(8,sharex=True, gridspec_kw={'hspace': 0})
-axs[0].scatter(bat_time, bat_data.U1, s=5, c=bat_data.B1, cmap=colormap1)
-axs[1].scatter(bat_time, bat_data.U2, s=5, c=bat_data.B2, cmap=colormap2)
-axs[2].scatter(bat_time, bat_data.U3, s=5, c=bat_data.B3, cmap=colormap3)
-axs[3].scatter(bat_time, bat_data.U4, s=5, c=bat_data.B4, cmap=colormap4)
-axs[4].scatter(bat_time, bat_data.U5, s=5, c=bat_data.B5, cmap=colormap5)
-axs[5].scatter(bat_time, bat_data.U6, s=5, c=bat_data.B6, cmap=colormap6)
+axs[0].scatter(bat_time, bat_data.U1, s=3, c=bat_data.B1, cmap=colormap1)
+axs[1].scatter(bat_time, bat_data.U2, s=3, c=bat_data.B2, cmap=colormap2)
+axs[2].scatter(bat_time, bat_data.U3, s=3, c=bat_data.B3, cmap=colormap3)
+axs[3].scatter(bat_time, bat_data.U4, s=3, c=bat_data.B4, cmap=colormap4)
+axs[4].scatter(bat_time, bat_data.U5, s=3, c=bat_data.B5, cmap=colormap5)
+axs[5].scatter(bat_time, bat_data.U6, s=3, c=bat_data.B6, cmap=colormap6)
 axs[6].scatter(bat_time, bat_data.Stdev, s=1)
 axs[7].scatter(bat_time, bat_data.StdevCh, s=1)
 axs[0].set(xlabel='$t$ / s', ylabel='$U_1$ / V')
