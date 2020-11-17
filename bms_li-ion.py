@@ -15,9 +15,9 @@ colormap6 = ListedColormap(["black","lawngreen"])
 
 #funkcja obliczająca wartości wielomianu i pochodnej
 def bat_poly_calc(x, c):
-    return c[0] + c[1]*x+c[2]*x**2+c[3]*x**3+c[4]*x**4+c[5]*x**5+c[6]*x**6+c[7]*x**7+c[8]*x**8+c[9]*x**9
+    return c[0] + c[1]*x+c[2]*x**2+c[3]*x**3+c[4]*x**4+c[5]*x**5+c[6]*x**6+c[7]*x**7+c[8]*x**8+c[9]*x**9+c[10]*x**10+c[11]*x**11
 def bat_diff_calc(x, c):
-    return (c[1]+2*c[2]*x+3*c[3]*x**2+4*c[4]*x**3+5*c[5]*x**4+6*c[6]*x**5+7*c[7]*x**6+8*c[8]*x**7+9*c[9]*x**8)
+    return (c[1]+2*c[2]*x+3*c[3]*x**2+4*c[4]*x**3+5*c[5]*x**4+6*c[6]*x**5+7*c[7]*x**6+8*c[8]*x**7+9*c[9]*x**8+10*c[10]*x**9+11*c[11]*x**10)
 
 
 bat_time = np.linspace(10,7200,720) #BATtery_time - całk. czas ipeh1+ipeh2
@@ -36,26 +36,27 @@ plt.scatter(bat_time, bat_data.U5, s=2, c="gray", label='U5')
 plt.scatter(bat_time, bat_data.U6, s=2, c="black", label='U6')
 plt.xlabel("t [s]")
 plt.ylabel("U [V]")
+plt.grid(color='r', linestyle='-', linewidth=0.1)
 plt.legend(loc='best')
 plt.savefig('Lion_voltages.png', dpi=420)
 
 #krzywe ładowania
-bat_ref_1C = pd.read_csv('NMC_2C.csv', sep='; ',decimal=',') #krzywa referencyjna 1C
+bat_ref_1C = pd.read_csv('NMC_01C_v2.csv', sep='; ',decimal=',') #krzywa referencyjna 1C
 bat_ref_1C["U"] = bat_ref_1C["U"].values[::-1]
 bat_ref_1C["Q"] = bat_ref_1C["Q"].values*0.01
-coeffs_1C = np.polynomial.polynomial.polyfit(bat_ref_1C.Q,bat_ref_1C.U,9) #dopasowanie wielomianu
+coeffs_1C = np.polynomial.polynomial.polyfit(bat_ref_1C.Q,bat_ref_1C.U,11) #dopasowanie wielomianu
 
 
 bat_ref_02C = pd.read_csv('NMC_02C.csv', sep='; ',decimal=',') #krzywa referencyjna 0,2C
 bat_ref_02C["Q"] = bat_ref_02C["Q"].values[::-1]
 bat_ref_02C["Q"] = bat_ref_02C["Q"].values*0.01
-coeffs_02C = np.polynomial.polynomial.polyfit(bat_ref_02C.Q,bat_ref_02C.U,9) #dopasowanie wielomianu
+coeffs_02C = np.polynomial.polynomial.polyfit(bat_ref_02C.Q,bat_ref_02C.U,11) #dopasowanie wielomianu
 
 bat_data_charge = bat_data[:472] #cięcie na część ładowania i rozładowania
 bat_data_discharge = bat_data[472:]
 bat_data_discharge = bat_data_discharge.reset_index(drop=True)
 
-bat_data_charge['Q'] = (630+(bat_data_charge.index+1)*10*5000/3600)/8400 #przeliczanie kolumny z ładunkiem
+bat_data_charge['Q'] = ((bat_data_charge.index+1)*10*5000/3600)/8400 + 0.075 #przeliczanie kolumny z ładunkiem
 bat_data_discharge['Q'] = (8400-(bat_data_discharge.index+1)*10*200/3600)/8400 - 0.075
 
 print(bat_data_charge.Q)
@@ -66,6 +67,10 @@ bat_data_discharge['StdevCh'] = bat_data_discharge.Stdev/bat_diff_calc(bat_data_
 bat_data = bat_data_charge  #końcowe sumowanie danych
 bat_data = bat_data.append(bat_data_discharge)
 bat_mobil = 42
+
+
+bat_data.StdevCh = bat_data.StdevCh*10/36
+bat_data.Stdev = bat_data.Stdev*1000
 
 #wykres
 fig, axs = plt.subplots(8,sharex=True, gridspec_kw={'hspace': 0})
@@ -83,8 +88,8 @@ axs[2].set(xlabel='$t$ / s', ylabel='$U_3$ / V')
 axs[3].set(xlabel='$t$ / s', ylabel='$U_4$ / V')
 axs[4].set(xlabel='$t$ / s', ylabel='$U_5$ / V')
 axs[5].set(xlabel='$t$ / s', ylabel='$U_6$ / V')
-axs[6].set(xlabel='$t$ / s', ylabel='$\sigma$ / V')
-axs[7].set(xlabel='$t$ / s', ylabel='$\sigma_Q$ / C')
+axs[6].set(xlabel='$t$ / s', ylabel='$\sigma$ / mV')
+axs[7].set(xlabel='$t$ / s', ylabel='$\sigma_Q$ / mAh')
 plt.xlabel("t /s")
 plt.savefig('Lion_multiplot.png', dpi=420)
 plt.show()
